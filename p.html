@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Te QUIERO Matrix</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      overflow: hidden;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    #mensajeCentral {
+      position: absolute;
+      top: 45%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 50px;
+      font-family: 'Courier New', Courier, monospace;
+      color: pink;
+      z-index: 2;
+      animation: desaparecer 2s ease-out 4s forwards;
+      text-shadow: 0 0 10px #ff69b4, 0 0 20px #ff69b4;
+    }
+
+    @keyframes desaparecer {
+      to {
+        opacity: 0;
+        visibility: hidden;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="mensajeCentral"> TE QUIERO YAMI ❤️ </div>
+  <canvas id="canvas"></canvas>
+
+  <!-- Audio -->
+  <audio id="musicaFondo" autoplay loop>
+    <source src="CANCION/CANCION.mp3" type="audio/mpeg">
+    Tu navegador no soporta audio.
+  </audio>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const fontSize = 20;
+    const columns = Math.floor(canvas.width / fontSize);
+    const drops = Array(columns).fill(Math.random() * -100);
+
+    const teAmoColors = ["#ff0000", "#ff69b4", "#ffc107", "#ff6347", "#ff1493"];
+
+    function drawMatrix() {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.font = `${fontSize}px monospace`;
+
+      for (let i = 0; i < columns; i++) {
+        const text = "TE QUIERO";
+        const color = teAmoColors[Math.floor(Math.random() * teAmoColors.length)];
+        ctx.fillStyle = color;
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 10;
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.99) {
+          drops[i] = 0;
+        }
+        drops[i] += 0.4;
+      }
+
+      ctx.shadowBlur = 0;
+    }
+
+    const hearts = [];
+    for (let i = 0; i < 25; i++) {
+      hearts.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: 20 + Math.random() * 10,
+        speed: 0.3 + Math.random() * 1,
+        opacity: Math.random()
+      });
+    }
+
+    function drawHearts() {
+      ctx.save();
+      ctx.font = `20px serif`;
+      ctx.fillStyle = "rgba(255, 105, 180, 0.5)";
+      for (let h of hearts) {
+        ctx.globalAlpha = h.opacity;
+        ctx.font = `${h.size}px serif`;
+        ctx.fillText("💗", h.x, h.y);
+        h.y -= h.speed;
+        if (h.y < -50) {
+          h.y = canvas.height + 50;
+          h.x = Math.random() * canvas.width;
+        }
+      }
+      ctx.restore();
+    }
+
+    const fireworks = [];
+
+    canvas.addEventListener("click", (e) => {
+      createFirework(e.clientX, e.clientY);
+    });
+
+    function createFirework(x, y) {
+      const particles = [];
+      const count = 50 + Math.floor(Math.random() * 10); // pequeñas
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * 2 * Math.PI;
+        const speed = Math.random() * 2 + 1;
+        particles.push({
+          x,
+          y,
+          dx: Math.cos(angle) * speed,
+          dy: Math.sin(angle) * speed,
+          gravity: 0.05,
+          life: 40,
+          opacity: 1,
+          size: 8 + Math.random() * 3,
+          color: teAmoColors[Math.floor(Math.random() * teAmoColors.length)]
+        });
+      }
+
+      fireworks.push(particles);
+      if (fireworks.length > 15) fireworks.shift(); // control rendimiento
+    }
+
+    function drawFireworks() {
+      ctx.save();
+      for (let i = fireworks.length - 1; i >= 0; i--) {
+        const particles = fireworks[i];
+        for (let j = particles.length - 1; j >= 0; j--) {
+          const p = particles[j];
+          if (p.life > 0) {
+            ctx.globalAlpha = p.opacity;
+            ctx.fillStyle = p.color;
+            ctx.shadowColor = p.color;
+            ctx.shadowBlur = 15;
+            ctx.font = `${p.size}px Arial`;
+            ctx.fillText("TE QUIERO", p.x, p.y);
+            p.x += p.dx;
+            p.y += p.dy;
+            p.dy += p.gravity;
+            p.life--;
+            p.opacity -= 0.02;
+          } else {
+            particles.splice(j, 1);
+          }
+        }
+        if (particles.length === 0) {
+          fireworks.splice(i, 1);
+        }
+      }
+      ctx.restore();
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      drawMatrix();
+      drawHearts();
+      drawFireworks();
+    }
+
+    animate();
+
+    window.addEventListener("resize", () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+  </script>
+  <script>
+  const audio = document.getElementById('musicaFondo');
+
+  // Espera el primer clic para reproducir el audio
+  document.body.addEventListener('click', () => {
+    if (audio.paused) {
+      audio.play();
+    }
+  }, { once: true });
+</script>
+</body>
+</html>
